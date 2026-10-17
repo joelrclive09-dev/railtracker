@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+.next/
+frontend/node_modules/
+frontend/.next/
+
+# Go build artifacts
+backend/railtracker.exe
+backend/railtracker
+
+# Environment variables — never commit these!
+.env.local
+.env.production
+frontend/.env.local
+frontend/.env.production
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
