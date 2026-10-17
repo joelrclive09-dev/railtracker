@@ -1258,7 +1258,14 @@ func main() {
 	mux.HandleFunc("/api/v1/trains/ping", enableCORS(handleTrainPing))
 	mux.HandleFunc("/api/v1/stations/live-board", enableCORS(handleStationLiveBoard))
 
-	port := ":8080"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	}
+
 	server := &http.Server{
 		Addr:         port,
 		Handler:      mux,

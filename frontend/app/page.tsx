@@ -2,84 +2,71 @@
 
 import React, { useState } from "react";
 import { Navbar } from "@/components/Navbar";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { RouteFinderTab } from "@/components/RouteFinderTab";
 import { LiveTrackerTab } from "@/components/LiveTrackerTab";
 import { StationLensTab } from "@/components/StationLensTab";
-import { Station3DVisualizerTab } from "@/components/Station3DVisualizerTab";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<
-    "routes" | "tracker" | "lens" | "visualizer3d"
-  >("routes");
+  const [activeTab, setActiveTab] = useState<"routes" | "tracker" | "lens">("routes");
 
-  // Cross-tab interaction states
-  const [selectedTrainForTracking, setSelectedTrainForTracking] = useState("16128");
-  const [selected3DHub, setSelected3DHub] = useState("TPJ");
-  const [selected3DArrivalPlat, setSelected3DArrivalPlat] = useState(1);
-  const [selected3DDeparturePlat, setSelected3DDeparturePlat] = useState(2);
+  // Selected train for live tracking from route finder or station lens
+  const [selectedTrainForTracking, setSelectedTrainForTracking] = useState("");
 
-  // Jump to Live Tracker with specific train preloaded
+  // Jump to Live Tracker
   const handleTrackLive = (trainNumber: string) => {
     setSelectedTrainForTracking(trainNumber);
     setActiveTab("tracker");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Jump to 3D Station Visualizer with hub and platforms preloaded
-  const handleView3D = (
-    hubCode: string,
-    arrivalPlat: number,
-    departurePlat: number
-  ) => {
-    setSelected3DHub(hubCode);
-    setSelected3DArrivalPlat(arrivalPlat);
-    setSelected3DDeparturePlat(departurePlat);
-    setActiveTab("visualizer3d");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#080c14] text-slate-100">
-      {/* Sticky Navigation Bar */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="min-h-screen flex flex-col" style={{ background: "#000000", color: "#e2e8f0" }}>
+      {/* Clean subtle dark transit grid background */}
+      <AnimatedBackground />
 
-      {/* Main Tab Content */}
-      <main className="flex-1 pb-16">
-        {activeTab === "routes" && (
-          <RouteFinderTab
-            onTrackLive={handleTrackLive}
-            onView3D={handleView3D}
-          />
-        )}
+      {/* Main App Content */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {activeTab === "tracker" && (
-          <LiveTrackerTab initialTrainNumber={selectedTrainForTracking} />
-        )}
+        <main className="flex-1 pb-16">
+          {activeTab === "routes" && (
+            <RouteFinderTab onTrackLive={handleTrackLive} />
+          )}
+          {activeTab === "tracker" && (
+            <LiveTrackerTab initialTrainNumber={selectedTrainForTracking} />
+          )}
+          {activeTab === "lens" && (
+            <StationLensTab onTrackTrain={handleTrackLive} />
+          )}
+        </main>
 
-        {activeTab === "lens" && (
-          <StationLensTab onTrackTrain={handleTrackLive} />
-        )}
-
-        {activeTab === "visualizer3d" && (
-          <Station3DVisualizerTab
-            initialHub={selected3DHub}
-            initialArrivalPlat={selected3DArrivalPlat}
-            initialDeparturePlat={selected3DDeparturePlat}
-          />
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950/80 py-8 px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 space-y-2">
-        <div className="flex items-center justify-center space-x-2 text-slate-400 font-medium">
-          <span className="text-amber-400 font-bold font-mono">RAILTRACKER</span>
-          <span>•</span>
-          <span>Indian Railways Multi-Hop Pathfinding &amp; 3D Digital Twin Platform</span>
-        </div>
-        <p>
-          Powered by Go Time-Expanded Railway In-Memory Graph, PostgreSQL, Next.js App Router, and Three.js.
-        </p>
-      </footer>
+        {/* Footer */}
+        <footer
+          className="py-8 px-4 sm:px-6 lg:px-8 text-center text-xs space-y-2"
+          style={{ borderTop: "1px solid #1a1a2e", background: "rgba(10,10,22,0.92)", color: "#475569" }}
+        >
+          <div className="flex items-center justify-center space-x-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Railtracker" className="w-5 h-5 object-contain" />
+            <span
+              className="font-bold font-mono text-sm"
+              style={{
+                background: "linear-gradient(135deg,#a78bfa,#34d399)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              RAILTRACKER
+            </span>
+            <span>•</span>
+            <span>Indian Railways Multi-Hop Transit & Live Tracking</span>
+          </div>
+          <p style={{ color: "#64748b" }}>
+            High-Performance Go In-Memory Transit Graph • PostgreSQL • Next.js App Router • Live GPS & Crowdsource Radar
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

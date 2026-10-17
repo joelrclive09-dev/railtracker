@@ -1,28 +1,29 @@
-# Build stage
-FROM golang:1.21-alpine AS builder
+# Stage 1: Build the Go binary
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum ./
+# Install ca-certificates and tzdata for Indian Standard Time (IST)
+RUN apk add --no-cache git ca-certificates tzdata
+
+COPY go.mod go.sum* ./
 RUN go mod download
 
-# Copy source
-COPY main.go .
+COPY . .
 
-# Build binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-s -w" -o railtracker .
+# Build statically linked binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o railtracker .
 
-# Final minimal image
-FROM alpine:latest
+# Stage 2: Minimal Production Image
+FROM alpine:3.20
 
-RUN apk --no-cache add ca-certificates tzdata
+WORKDIR /app
 
-WORKDIR /root/
+RUN apk add --no-cache ca-certificates tzdata
+ENV TZ=Asia/Kolkata
 
-# Copy binary from builder
-COPY --from=builder /app/railtracker .
+COPY --from=builder /app/railtracker /app/railtracker
 
 EXPOSE 8080
 
-CMD ["./railtracker"]
+CMD ["/app/railtracker"]
